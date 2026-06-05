@@ -496,8 +496,20 @@ function TypingTest({ stage, reviewKeyIds, showGuide, onToggleGuide, initial, is
 }
 
 // ---- Result body (shared; rendered inside the run card) -------------------
+// Button label with an "or hit Enter" hint below the main text. Used on the
+// buttons that Enter also triggers.
+function AdvanceLabel({ text }) {
+  return (
+    <span className="btn-stack">
+      <span className="btn-main">{text}</span>
+      <span className="btn-sub">or hit <kbd className="kbd">Enter</kbd></span>
+    </span>
+  );
+}
+
 function ResultBody({ title, stats, warn, onRestart, isLast, hasNextLesson, onNext, onExit }) {
-  const label = !isLast ? "Next stage ›" : hasNextLesson ? "Next lesson ›" : "Back to course";
+  const advancing = !isLast || hasNextLesson;
+  const label = !isLast ? "Next stage" : hasNextLesson ? "Next lesson" : "Back to course";
   const action = !isLast ? onNext : hasNextLesson ? onNext : onExit;
   return (
     <>
@@ -512,7 +524,7 @@ function ResultBody({ title, stats, warn, onRestart, isLast, hasNextLesson, onNe
       </div>
       <div className="summary-actions">
         <button className="btn" onClick={onRestart}>Restart</button>
-        <button className="btn primary inline" onClick={action}>{label}</button>
+        <button className="btn primary inline" onClick={action}>{advancing ? <AdvanceLabel text={label} /> : label}</button>
       </div>
     </>
   );
@@ -565,7 +577,7 @@ function Intro({ keyId, onNext }) {
         {/* <p className="intro-lead">Tap {k.label}; flick the four directions for the rest. Try each one below — it lights up in the guide.</p> */}
         <FlickGuide keyId={keyId} litPos={litPos} />
         <div className="summary-actions">
-          <button className="btn primary inline" onClick={onNext}>Next stage ›</button>
+          <button className="btn primary inline" onClick={onNext}><AdvanceLabel text="Next stage" /></button>
         </div>
       </div>
       <textarea ref={inputRef} className="capture" rows={1} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="try a flick…" aria-label="type any character of this key to see it in the guide" />
@@ -746,6 +758,10 @@ html, body { margin: 0; background: #fafafa; }
 .btn.ghost { border-color: transparent; background: transparent; padding: 8px 4px; color: #3f3f46; }
 .btn.small { font-size: 13px; padding: 6px 8px; }
 .btn:disabled { opacity: .4; cursor: default; }
+.btn-stack { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.2; gap: 3px; }
+.btn-main { font-weight: inherit; }
+.btn-sub { font-size: 11px; font-weight: 400; opacity: .6; display: inline-flex; align-items: center; gap: 4px; }
+.kbd { border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; font-size: 10px; line-height: 1.5; font-family: inherit; opacity: .85; }
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e4e4e7; background: #fff; color: #3f3f46; border-radius: 8px; width: 32px; height: 32px; padding: 0; cursor: pointer; }
 .icon-btn:active { background: #f4f4f5; }
 
