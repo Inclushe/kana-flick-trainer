@@ -70,6 +70,7 @@ const KEYS = [
   { id: "ya", label: "や", dirs: { center: ["や"], left: ["「", "（"], up: ["ゆ"], right: ["」", "）"], down: ["よ"] } },
   { id: "ra", label: "ら", dirs: { center: ["ら"], left: ["り"], up: ["る"], right: ["れ"], down: ["ろ"] } },
   { id: "wa", label: "わ", dirs: { center: ["わ"], left: ["を"], up: ["ん"], right: ["ー"], down: ["〜"] } },
+  { id: "symbol", label: "、", dirs: { center: ["、"], left: ["。"], up: ["？"], right: ["！"], down: ["…"] } },
 ];
 const KEY_BY_ID = Object.fromEntries(KEYS.map((k) => [k.id, k]));
 const POS_ORDER = ["center", "left", "up", "right", "down"];
@@ -228,7 +229,7 @@ function Drill({ stage, keyId, showGuide, onToggleGuide, initial, isLast, hasNex
     setSub(m);
     if (m === expected.length) {
       const nh = hits + expected.length, ni = idx + 1, fin = ni >= total;
-      setHits(nh); setSub(0); doFlash("ok"); clearField();
+      setHits(nh); setSub(0); clearField();
       if (fin) setDone(true); else setIdx(ni);
       report({ hits: nh, idx: ni, done: fin });
     }
@@ -276,14 +277,14 @@ function Drill({ stage, keyId, showGuide, onToggleGuide, initial, isLast, hasNex
     <div className={"drill " + (flash ? "flash-" + flash : "")}>
       {done ? (
         <ResultBody title={`${STAGE_LABEL[stage]} complete`}
-          stats={[[`${accuracy}%`, "accuracy"], [cpm, "chars / min"], [errs, "misses"]]}
+          stats={[[`${accuracy}%`, "accuracy"], [errs, "misses"]]}
           warn={accuracy < 85 ? "Accuracy under 85% — worth another pass." : null}
           onRestart={restart} isLast={isLast} hasNextLesson={hasNextLesson} onNext={onNext} onExit={onExit} />
       ) : (
         <div className="drill-main">
           <div className="run-top">
             <span className="muted">{idx + 1} / {total}</span>
-            <span className="run-top-right"><span className="muted">{accuracy}% acc</span><GuideToggle on={showGuide} onToggle={onToggleGuide} /></span>
+            <span className="run-top-right"><GuideToggle on={showGuide} onToggle={onToggleGuide} /></span>
           </div>
           <div className="progressbar"><div style={{ width: `${(idx / total) * 100}%` }} /></div>
           <div className="run-body drill-body">
@@ -295,7 +296,6 @@ function Drill({ stage, keyId, showGuide, onToggleGuide, initial, isLast, hasNex
                 </span>
               ))}
             </div>
-            <div className="muted sub-instr">{KEY_BY_ID[curStep.keyId].label} key · {POS_META[curStep.pos].label}</div>
             {showGuide && <FlickGuide keyId={curStep.keyId} />}
           </div>
         </div>
@@ -469,7 +469,7 @@ function TypingTest({ stage, reviewKeyIds, showGuide, onToggleGuide, initial, is
             {timed
               ? <span className={"timer" + (timeLeft <= 10 && started ? " timer-low" : "")}>{fmtTime(timeLeft)}</span>
               : <span className="muted">{cursor} / {passage.length}</span>}
-            <span className="run-top-right"><span className="muted">{accuracy}% acc</span><GuideToggle on={showGuide} onToggle={onToggleGuide} /></span>
+            <span className="run-top-right">{started ? <span className="muted">{accuracy}% acc</span> : <></>}<GuideToggle on={showGuide} onToggle={onToggleGuide} /></span>
           </div>
           <div className="run-body test-body">
             <div className="tt-passage">
@@ -485,7 +485,7 @@ function TypingTest({ stage, reviewKeyIds, showGuide, onToggleGuide, initial, is
             </div>
             {errored
               ? <div className="muted tt-hint">⌫ backspace to clear the error</div>
-              : !started && <div className="muted tt-hint">{timed ? `Type the sequence — ${TIMED_SECONDS}s clock starts on your first character.` : "Type the whole sequence. No clock."}</div>}
+              : !started && <div className="muted tt-hint">{timed ? `Start typing. ${TIMED_SECONDS}s clock starts on your first character.` : "Start typing."}</div>}
             {showGuide && <FlickGuide keyId={guideKeyId} />}
           </div>
         </div>
@@ -500,19 +500,21 @@ function ResultBody({ title, stats, warn, onRestart, isLast, hasNextLesson, onNe
   const label = !isLast ? "Next stage ›" : hasNextLesson ? "Next lesson ›" : "Back to course";
   const action = !isLast ? onNext : hasNextLesson ? onNext : onExit;
   return (
-    <div className="run-body summary">
-      <div className="summary-title">{title}</div>
-      <div className="stat-row">
-        {stats.map(([n, l], i) => (
-          <div className="stat" key={i}><div className="stat-n">{n}</div><div className="stat-l">{l}</div></div>
-        ))}
+    <>
+      <div className="run-body summary">
+        <div className="summary-title">{title}</div>
+        <div className="stat-row">
+          {stats.map(([n, l], i) => (
+            <div className="stat" key={i}><div className="stat-n">{n}</div><div className="stat-l">{l}</div></div>
+          ))}
+        </div>
+        {warn && <p className="hint-text">{warn}</p>}
       </div>
-      {warn && <p className="hint-text">{warn}</p>}
       <div className="summary-actions">
         <button className="btn" onClick={onRestart}>Restart</button>
         <button className="btn primary inline" onClick={action}>{label}</button>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -768,12 +770,11 @@ html, body { margin: 0; background: #fafafa; }
 .testing-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #a1a1aa; }
 
 .nav-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-.nav-back { flex: 0 0 auto; font-family: inherit; font-size: 13px; padding: 7px 11px; border-radius: 9px; border: 1px solid #e4e4e7; background: #fff; color: #3f3f46; white-space: nowrap; cursor: pointer; }
+.nav-back { flex: 0 0 auto; font-family: inherit; font-size: 13px; padding: 6px 11px; border-radius: 9px; color: #3f3f46; white-space: nowrap; cursor: pointer; background: transparent; border: none; }
 .stage-tabs { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; min-width: 0; padding: 2px 0; }
 .stage-tab { flex: 0 0 auto; font-family: inherit; font-size: 13px; padding: 7px 12px; border-radius: 9px; border: 1px solid #e4e4e7; background: #fff; color: #3f3f46; white-space: nowrap; cursor: pointer; }
 .stage-tab.active { background: #18181b; color: #fff; border-color: #18181b; }
-.stage-tab .tabcheck { color: #16a34a; margin-left: 5px; font-size: 11px; }
-.stage-tab.active .tabcheck { color: #86efac; }
+.stage-tab .tabcheck { margin-left: 5px; font-size: 11px; }
 
 .panel { background: #fff; border: 1px solid #e4e4e7; border-radius: 16px; padding: 22px; }
 .intro-key { font-size: 64px; text-align: center; line-height: 1; margin-bottom: 8px; }
@@ -806,16 +807,17 @@ html, body { margin: 0; background: #fafafa; }
 .prompt-arrow { font-size: 26px; color: #a1a1aa; }
 .sub-instr { text-align: center; margin-top: 2px; }
 
-.tt-passage { display: grid; grid-template-columns: repeat(auto-fill, var(--tt-cell, 40px)); justify-content: start; align-content: start; gap: 4px; width: 100%; margin: 14px 0 6px; }
+.tt-passage { display: grid; grid-template-columns: repeat(auto-fill, var(--tt-cell, 40px)); justify-content: center; align-content: start; gap: 4px; width: 100%; margin: 14px 0 6px; }
 .tt-ch { width: var(--tt-cell, 40px); height: var(--tt-cell, 40px); display: flex; align-items: center; justify-content: center; font-size: 24px; line-height: 1; border-radius: 8px; }
 .tt-done { color: #c4c4c8; }
 .tt-upcoming { color: #27272a; }
 .tt-current { color: #fff; background: #18181b; }
 .tt-error { color: #fff; background: #dc2626; }
-.tt-hint { text-align: center; margin: 4px 0; }
+.tt-hint { text-align: center; margin: 16px 0; }
 
 .capture { width: 100%; margin-top: 16px; padding: 14px; font-size: 24px; text-align: center; border: 1px solid #d4d4d8; border-radius: 12px; font-family: inherit; background: #fff; outline: none; resize: none; overflow: hidden; line-height: 1.3; display: block; }
 .capture:focus { border-color: #18181b; }
+.capture:focus::placeholder { color: transparent; }
 
 .summary { text-align: center; }
 .summary-title { font-size: 18px; font-weight: 600; margin-bottom: 18px; }
@@ -828,7 +830,7 @@ html, body { margin: 0; background: #fafafa; }
 
 /* Run mode: card fills the visible page height; fluid sizing for short
    (keyboard-open) viewports; nothing hidden. */
-.app.run { position: fixed; top: 0; left: 0; right: 0; min-height: 0; height: var(--vvh, 100dvh); display: flex; flex-direction: column; padding: 10px 12px 12px; overflow: hidden; }
+.app.run { position: fixed; top: 0; left: 0; right: 0; min-height: 0; height: var(--vvh, 100dvh); display: flex; flex-direction: column; padding: 10px 0 12px; overflow: hidden; }
 .run .lesson { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .run .nav-row { flex: 0 0 auto; }
 .run .stage-tabs { padding: 2px 0; }
@@ -872,7 +874,7 @@ html, body { margin: 0; background: #fafafa; }
   .key-card.inprog .kc-status { color: #818cf8; }
   .testing { border-color: #2e2e33; }
   .testing-label { color: #8a8a92; }
-  .nav-back { background: #1c1c1f; border-color: #34343a; color: #c4c4cb; }
+  .nav-back { color: #c4c4cb; }
   .stage-tab { background: #1c1c1f; border-color: #34343a; color: #c4c4cb; }
   .stage-tab.active { background: #3a5687; border-color: #3a5687; color: #eef2fb; }
   .panel { background: #1c1c1f; border-color: #2e2e33; }
@@ -894,7 +896,7 @@ html, body { margin: 0; background: #fafafa; }
   .prompt-arrow { color: #6a6a72; }
   .capture { background: #161618; border-color: #3a3a40; color: #ededed; }
   .capture::placeholder { color: #6a6a72; }
-  .capture:focus { border-color: #ededed; }
+  .capture:focus { border-color: #2d2d2d; }
   .tt-done { color: #5a5a60; }
   .tt-upcoming { color: #d4d4db; }
   .tt-current { background: #ededed; color: #111; }
