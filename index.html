@@ -597,7 +597,7 @@ function Lesson({ keyId, ks, doneKeyIds, hasNextLesson, onNextLesson, onExit, up
         <Drill key={stage} stage={stage} keyId={keyId} showGuide={showGuide} onToggleGuide={toggleGuide}
           initial={ks[stage]} isLast={isLast} hasNextLesson={hasNextLesson} onProgress={onProgress} onNext={goNext} onExit={onExit} />
       ) : (
-        <TypingTest key={stage} stage={stage} reviewKeyIds={reviewKeyIds} showGuide={showGuide} onToggleGuide={toggleGuide}
+        <TypingTest key={stage} stage={stage} reviewKeyIds={[keyId]} showGuide={showGuide} onToggleGuide={toggleGuide}
           initial={ks[stage]} isLast={isLast} hasNextLesson={hasNextLesson} onProgress={onProgress} onNext={goNext} onExit={onExit} />
       )}
 
