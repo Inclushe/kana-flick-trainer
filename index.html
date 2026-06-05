@@ -576,9 +576,9 @@ function Intro({ keyId, onNext }) {
         <div className="intro-key">{k.label}</div>
         {/* <p className="intro-lead">Tap {k.label}; flick the four directions for the rest. Try each one below — it lights up in the guide.</p> */}
         <FlickGuide keyId={keyId} litPos={litPos} />
-        <div className="summary-actions">
-          <button className="btn primary inline" onClick={onNext}><AdvanceLabel text="Next stage" /></button>
-        </div>
+      </div>
+      <div className="summary-actions">
+        <button className="btn primary inline" onClick={onNext}><AdvanceLabel text="Next stage" /></button>
       </div>
       <textarea ref={inputRef} className="capture" rows={1} autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="try a flick…" aria-label="type any character of this key to see it in the guide" />
     </div>
