@@ -739,7 +739,7 @@ function App() {
       ) : (
         <Lesson key={activeKey} keyId={activeKey} ks={keyData[activeKey] || {}} doneKeyIds={doneKeyIds}
           hasNextLesson={KEYS.findIndex((k) => k.id === activeKey) < KEYS.length - 1}
-          onNextLesson={() => { const i = KEYS.findIndex((k) => k.id === activeKey); const nx = KEYS[i + 1]; if (nx) setActiveKey(nx.id); else { setView("home"); setActiveKey(null); } }}
+          onNextLesson={() => { const i = KEYS.findIndex((k) => k.id === activeKey); const nx = KEYS[i + 1]; if (nx) { updateKey(nx.id, (prev) => ({ ...prev, lastStage: "intro" })); setActiveKey(nx.id); } else { setView("home"); setActiveKey(null); } }}
           onExit={() => { setView("home"); setActiveKey(null); }} updateKey={updateKey} />
       )}
     </div>
